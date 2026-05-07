@@ -4,10 +4,10 @@
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/db.php';
 
-$user = require_auth('TSG Personnel');
+$user = require_auth('Admin');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../tsg/dashboard.php');
+    header('Location: ../admin/dashboard.php');
     exit;
 }
 
@@ -15,7 +15,7 @@ $reportId    = (int) ($_POST['report_id']     ?? 0);
 $personnelId = (int) ($_POST['personnel_id']  ?? 0);
 
 if ($reportId === 0 || $personnelId === 0) {
-    header('Location: ../tsg/dashboard.php');
+    header('Location: ../admin/dashboard.php');
     exit;
 }
 
@@ -27,5 +27,5 @@ $st = $db->prepare(
 );
 $st->execute([$personnelId, $reportId]);
 
-header('Location: ../tsg/dashboard.php');
+header('Location: ../admin/dashboard.php');
 exit;

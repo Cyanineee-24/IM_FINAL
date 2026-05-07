@@ -4,10 +4,14 @@
 require_once __DIR__ . '/../includes/session.php';
 require_once __DIR__ . '/../includes/db.php';
 
-$user = require_auth('TSG Personnel');
+$user = require_auth();
+
+if ($user['role'] !== 'TSG Personnel' && $user['role'] !== 'Admin') {
+    redirect_to_dashboard($user['role']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . base_url('tsg/dashboard.php'));
+    header('Location: ' . base_url($user['role'] === 'Admin' ? 'admin/dashboard.php' : 'tsg/dashboard.php'));
     exit;
 }
 

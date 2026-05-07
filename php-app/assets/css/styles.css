@@ -798,6 +798,11 @@ textarea.form-control {
     }
 }
 
+.dashboard-centered {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
 .section-title {
     font-family: 'Montserrat', sans-serif;
     font-size: 13px;
@@ -814,10 +819,9 @@ textarea.form-control {
 }
 
 .stat-card {
-    background: var(--white);
+    background: #EAEAEA;
     border-radius: 8px;
     padding: 1.25rem 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
     gap: .5rem;
@@ -827,6 +831,16 @@ textarea.form-control {
 .stat-card.border-yellow { border-top: 4px solid var(--gold); }
 .stat-card.border-blue { border-top: 4px solid #1565C0; }
 .stat-card.border-green { border-top: 4px solid #2E7D32; }
+
+.stat-card.border-purple { border-top: 4px solid #4A148C; }
+.stat-card.border-pink { border-top: 4px solid #E91E63; }
+.stat-card.border-lightblue { border-top: 4px solid #2196F3; }
+.stat-card.border-lightgreen { border-top: 4px solid #4CAF50; }
+
+.text-purple { color: #4A148C !important; }
+.text-pink { color: #E91E63 !important; }
+.text-lightblue { color: #2196F3 !important; }
+.text-lightgreen { color: #4CAF50 !important; }
 
 .stat-card .stat-label {
     font-size: 10px;
@@ -1033,7 +1047,7 @@ select.form-control {
     appearance: none;
     -webkit-appearance: none;
     padding-right: 30px;
-    background: #F9F9F9;
+    background: #EEEEEE;
     border: none;
     border-radius: 4px;
     height: 40px;
@@ -1042,7 +1056,7 @@ select.form-control {
 }
 
 .defect-textarea {
-    background: #F9F9F9;
+    background: #EEEEEE;
     border: none;
     border-radius: 4px;
     padding: 1rem;
@@ -1070,7 +1084,7 @@ select.form-control {
 }
 
 .component-card {
-    background: #F9F9F9;
+    background: #EEEEEE;
     border: 2px solid transparent;
     border-radius: 4px;
     padding: 1.5rem 1rem;
@@ -1119,7 +1133,7 @@ select.form-control {
 
 /* ─── UPLOAD ZONE ─────────────────────────────────────────── */
 .upload-zone {
-    border: 1px dashed #CCC;
+    border: 2px dashed #999;
     border-radius: 6px;
     padding: 2.5rem 1.5rem;
     text-align: center;
@@ -1129,13 +1143,13 @@ select.form-control {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: var(--white);
+    background: #FAFAFA;
     margin-top: 0.5rem;
 }
 
 .upload-zone:hover {
-    background: #FAFAFA;
-    border-color: #999;
+    background: #F0F0F0;
+    border-color: #666;
 }
 
 .upload-zone input[type=file] {
@@ -1170,8 +1184,15 @@ select.form-control {
     height: 64px;
     border-radius: 50%;
     overflow: hidden;
-    background: var(--white);
+    background: var(--gold);
+    color: var(--maroon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
     border: 2px solid var(--white);
+    font-family: 'DM Sans', sans-serif;
 }
 
 .profile-avatar-img {
@@ -1213,6 +1234,42 @@ select.form-control {
 
 .profile-card-body {
     padding: 3rem;
+}
+
+.section-header {
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.25rem;
+}
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.info-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.info-field label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.value-box {
+    background-color: #E8E8E8;
+    padding: 0.85rem;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+    min-height: 42px;
 }
 
 
@@ -1335,6 +1392,19 @@ select.form-control {
 
 .mb-2 {
     margin-bottom: 1rem;
+}
+
+.view-more-link {
+    color: red;
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    transition: text-decoration 0.2s;
+}
+
+.view-more-link:hover {
+    text-decoration: underline;
 }
 
 .text-muted {

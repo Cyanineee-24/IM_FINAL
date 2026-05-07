@@ -57,7 +57,7 @@ layout_sidebar($user, 'profile');
         <!-- Maroon Profile Hero -->
         <div class="profile-hero maroon-hero">
             <div class="profile-avatar-wrapper">
-                <img src="../assets/images/profileComponent.png" alt="Profile" class="profile-avatar-img">
+                <?= htmlspecialchars($initials) ?>
             </div>
             <div class="profile-hero-text">
                 <h2><?= htmlspecialchars(strtoupper($fullName)) ?></h2>

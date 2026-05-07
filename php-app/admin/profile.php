@@ -5,7 +5,7 @@ require_once ROOT . '/includes/session.php';
 require_once ROOT . '/includes/db.php';
 require_once ROOT . '/includes/layout.php';
 
-$user = require_auth('TSG Personnel');
+$user = require_auth('Admin');
 
 $db = get_db();
 
@@ -14,16 +14,8 @@ $st = $db->prepare('SELECT * FROM `User` WHERE UID = ?');
 $st->execute([$user['uid']]);
 $u = $st->fetch();
 
-// Activity stats for TSG: reports they were assigned to
-$stats = $db->query("
-    SELECT
-        COUNT(*)                              AS total,
-        SUM(Status = 'Pending')               AS pending,
-        SUM(Status = 'In-Progress')           AS inprogress,
-        SUM(Status = 'Resolved')              AS resolved
-    FROM DefectReport
-    WHERE AssignedPersonnelID = " . (int)$user['roleID'] . "
-")->fetch();
+// Total personnel accounts created
+$totalPersonnel = $db->query("SELECT COUNT(*) FROM `TSG_Personnel`")->fetchColumn();
 
 // Get PersonnelID (roleID for TSG = FacultyID, not PersonnelID)
 $st2 = $db->prepare('SELECT tp.PersonnelID FROM TSG_Personnel tp WHERE tp.FacultyID = ?');
@@ -48,7 +40,7 @@ layout_sidebar($user, 'profile');
             </div>
             <div class="profile-hero-text">
                 <h2><?= htmlspecialchars(strtoupper($fullName)) ?></h2>
-                <p class="subtitle">TSG Personnel</p>
+                <p class="subtitle">System Admin</p>
             </div>
             <button class="btn btn-outline-white" style="margin-left:auto; font-size: 10px; font-weight: 700; border-color: rgba(255,255,255,0.3); padding: 0.5rem 1rem;" onclick="openModal()">EDIT PROFILE</button>
         </div>
@@ -58,7 +50,9 @@ layout_sidebar($user, 'profile');
         <div class="profile-card-body">
             
             <!-- Personal info -->
-            <h3 class="section-title text-maroon" style="margin-bottom: 1rem;">PERSONAL INFORMATION</h3>
+            <div class="section-header">
+                <h3 class="section-title text-maroon" style="margin-bottom: 0;">PERSONAL INFORMATION</h3>
+            </div>
             
             <div class="profile-info-grid">
                 <div class="info-field">
@@ -75,33 +69,26 @@ layout_sidebar($user, 'profile');
                 </div>
                 <div class="info-field">
                     <label>POSITION:</label>
-                    <div class="value-box">TSG Personnel</div>
+                    <div class="value-box">System Admin</div>
                 </div>
                 <div class="info-field">
                     <label>CONTACT:</label>
                     <div class="value-box"><?= htmlspecialchars($u['Contact'] ?? '—') ?></div>
                 </div>
+                <div class="info-field">
+                    <!-- Empty field to balance the grid if needed -->
+                </div>
             </div>
 
-            <!-- Report Activity Stats -->
-            <h3 class="section-title text-maroon" style="margin-top: 2rem; margin-bottom: 1rem;">MY ASSIGNED ACTIVITY</h3>
+            <!-- Activity Stats -->
+            <div class="section-header" style="margin-top: 2rem;">
+                <h3 class="section-title text-maroon" style="margin-bottom: 0;">PERSONNEL ACCOUNTS CREATED</h3>
+            </div>
             
-            <div class="stats-row profile-stats-row">
+            <div class="stats-row profile-stats-row" style="grid-template-columns: repeat(4, 1fr);">
                 <div class="stat-card border-purple">
-                    <span class="stat-value text-purple"><?= (int)($stats['total'] ?? 0) ?></span>
-                    <span class="stat-label">TOTAL ASSIGNED</span>
-                </div>
-                <div class="stat-card border-pink">
-                    <span class="stat-value text-pink"><?= (int)($stats['pending'] ?? 0) ?></span>
-                    <span class="stat-label">PENDING</span>
-                </div>
-                <div class="stat-card border-lightblue">
-                    <span class="stat-value text-lightblue"><?= (int)($stats['inprogress'] ?? 0) ?></span>
-                    <span class="stat-label">IN-PROGRESS</span>
-                </div>
-                <div class="stat-card border-lightgreen">
-                    <span class="stat-value text-lightgreen"><?= (int)($stats['resolved'] ?? 0) ?></span>
-                    <span class="stat-label">RESOLVED</span>
+                    <span class="stat-value text-purple"><?= (int)$totalPersonnel ?></span>
+                    <span class="stat-label">TOTAL ACCOUNTS</span>
                 </div>
             </div>
 

@@ -103,6 +103,10 @@ function insert_tsg_personnel(int $uid): bool {
 function detect_role(int $uid): string {
     $db = get_db();
 
+    $st = $db->prepare('SELECT AdminID FROM `Admin` WHERE UID = ?');
+    $st->execute([$uid]);
+    if ($st->fetch()) return 'Admin';
+
     $st = $db->prepare('SELECT StudentID FROM `Student` WHERE UID = ?');
     $st->execute([$uid]);
     if ($st->fetch()) return 'Student';
@@ -121,11 +125,17 @@ function detect_role(int $uid): string {
 }
 
 /**
- * Get role-specific ID (StudentID or FacultyID).
+ * Get role-specific ID (StudentID or FacultyID or AdminID).
  * Mirrors AuthService::getRoleID()
  */
 function get_role_id(int $uid, string $role): int {
     $db = get_db();
+    if ($role === 'Admin') {
+        $st = $db->prepare('SELECT AdminID FROM `Admin` WHERE UID = ?');
+        $st->execute([$uid]);
+        $r = $st->fetch();
+        return $r ? (int) $r['AdminID'] : -1;
+    }
     if ($role === 'Student') {
         $st = $db->prepare('SELECT StudentID FROM `Student` WHERE UID = ?');
         $st->execute([$uid]);

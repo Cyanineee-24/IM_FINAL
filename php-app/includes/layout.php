@@ -26,15 +26,22 @@ function layout_head(string $title): void {
 function layout_sidebar(array $user, string $activePage): void {
     // Note: Kept function name as layout_sidebar to avoid changing every page file, 
     // but this now renders the top navbar.
+    $isAdmin   = $user['role'] === 'Admin';
     $isTsg     = $user['role'] === 'TSG Personnel';
     
     // Fallback initials
     $initials  = strtoupper(substr($user['firstName'],0,1) . substr($user['lastName'],0,1));
 
-    if ($isTsg) {
+    if ($isAdmin) {
+        $links = [
+            ['href' => '/admin/dashboard.php',    'key' => 'dashboard', 'label' => 'MAIN PAGE'],
+            ['href' => '/admin/manage_users.php', 'key' => 'manage',    'label' => 'MANAGE PERSONNEL ACCOUNTS'],
+        ];
+        $profileHref = '/admin/profile.php';
+        $rolePill = 'AdminStatus.png';
+    } elseif ($isTsg) {
         $links = [
             ['href' => '/tsg/dashboard.php',    'key' => 'dashboard', 'label' => 'MAIN PAGE'],
-            ['href' => '/tsg/all_reports.php',  'key' => 'reports',   'label' => 'REPORT'], // Or whatever TSG uses, keeping it similar
         ];
         $profileHref = '/tsg/profile.php';
         $rolePill = 'tsgStatus.png';
@@ -45,7 +52,7 @@ function layout_sidebar(array $user, string $activePage): void {
             ['href' => '/reporter/logs.php',         'key' => 'logs',      'label' => 'LOGS'],
         ];
         $profileHref = '/reporter/profile.php';
-        $rolePill = 'StudentStatus.png';
+        $rolePill = 'UserStatus.png';
     }
 
     $docRoot = rtrim(str_replace('\\','/',$_SERVER['DOCUMENT_ROOT']), '/');

@@ -54,10 +54,10 @@ layout_head('Dashboard');
 layout_sidebar($user, 'dashboard');
 ?>
 
-<!-- Dashboard content grid -->
-<div class="dashboard-grid">
+<!-- Dashboard content centered -->
+<div class="dashboard-centered">
 
-    <!-- Left/Main Column -->
+    <!-- /Main Column -->
     <div class="dashboard-main">
         
         <?php if ($success): ?>
@@ -127,28 +127,10 @@ layout_sidebar($user, 'dashboard');
                 </table>
             </div>
             <div class="card-footer" style="text-align: right; padding: 1rem 1.5rem;">
-                <a href="logs.php" style="color: red; font-size: 11px; font-weight: 800; text-decoration: none; font-family: 'Montserrat', sans-serif;">VIEW MORE</a>
+                <a href="logs.php" class="view-more-link">VIEW MORE</a>
             </div>
         </div>
     </div>
-
-    <!-- Right Column (Status Key) -->
-    <div class="dashboard-side">
-        <div class="card status-key-card">
-            <h3 class="card-title" style="margin-bottom: 1rem; display: block;">STATUS KEY</h3>
-            
-            <div class="status-key-item">
-                <span class="pill pill-pending">Pending</span> <span class="key-desc">Awaiting TSG</span>
-            </div>
-            <div class="status-key-item">
-                <span class="pill pill-inprogress">In-Progress</span> <span class="key-desc">Being Repaired</span>
-            </div>
-            <div class="status-key-item">
-                <span class="pill pill-resolved">Resolved</span> <span class="key-desc">Fixed & Closed</span>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 <?php 

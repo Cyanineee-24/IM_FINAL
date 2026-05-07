@@ -45,7 +45,9 @@ function require_auth(?string $role = null): array {
 
 /** Redirect to the correct dashboard for a role. */
 function redirect_to_dashboard(string $role): void {
-    if ($role === 'TSG Personnel') {
+    if ($role === 'Admin') {
+        header('Location: ' . base_url('admin/dashboard.php'));
+    } elseif ($role === 'TSG Personnel') {
         header('Location: ' . base_url('tsg/dashboard.php'));
     } else {
         header('Location: ' . base_url('reporter/dashboard.php'));
@@ -59,6 +61,6 @@ function redirect_to_dashboard(string $role): void {
  */
 function base_url(string $path = ''): string {
     // Hardcode the base folder name to fix redirection issues in XAMPP
-    return '/php-app/' . ltrim($path, '/');
+    return '/php-app/php-app/' . ltrim($path, '/');
 }
 

@@ -54,7 +54,7 @@ $old = $_SESSION['register_step1'] ?? [];
                     <div class="role-group">
                         <?php
                         $selectedRole = $old['role'] ?? '';
-                        foreach (['Student','Teacher','Personnel'] as $r):
+                        foreach (['Student','Teacher'] as $r):
                             $active = ($selectedRole === $r) ? ' selected' : '';
                         ?>
                         <button type="button" class="role-btn<?= $active ?>"
