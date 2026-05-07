@@ -61,6 +61,6 @@ function redirect_to_dashboard(string $role): void {
  */
 function base_url(string $path = ''): string {
     // Hardcode the base folder name to fix redirection issues in XAMPP
-    return '/php-app/php-app/' . ltrim($path, '/');
+    return '/php-app/' . ltrim($path, '/');
 }
 
