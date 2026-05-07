@@ -1,0 +1,1363 @@
+/* ============================================================
+   TSG Alert & Repair Network — Global Stylesheet
+   Colors mirror the JavaFX UI:
+     Primary maroon : #780A0D
+     Gold accent    : #C8A951
+     Pending pill   : #FFC107 / #333
+     In-Progress    : #1565C0 / white
+     Resolved       : #2E7D32 / white
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --maroon: #780A0D;
+    --maroon-dark: #5a0709;
+    --gold: #C8A951;
+    --gold-light: #F5E9C4;
+    --bg: #F5F5F5;
+    --white: #ffffff;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --border: #E0E0E0;
+    --sidebar-w: 220px;
+    --shadow: 0 2px 8px rgba(0, 0, 0, .08);
+    --radius: 10px;
+}
+
+body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ─── AUTH PAGES (shared) ─────────────────────────────────── */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--maroon) 0%, #3d0506 100%);
+}
+
+.auth-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .25);
+}
+
+.auth-card .logo {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-card .logo img {
+    height: 56px;
+    object-fit: contain;
+}
+
+.auth-card .logo-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--maroon);
+    letter-spacing: .5px;
+    margin-top: .4rem;
+}
+
+.auth-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--maroon);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    letter-spacing: .5px;
+}
+
+/* Full-width red auth card (like create-view.fxml) */
+.auth-card.dark {
+    background: var(--maroon);
+    color: var(--white);
+}
+
+.auth-card.dark .auth-title {
+    color: var(--gold);
+}
+
+.auth-card.dark .form-label {
+    color: rgba(255, 255, 255, .8);
+}
+
+.auth-card.dark .form-control {
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .3);
+    color: var(--white);
+}
+
+.auth-card.dark .form-control::placeholder {
+    color: rgba(255, 255, 255, .5);
+}
+
+.auth-card.dark .form-control:focus {
+    background: rgba(255, 255, 255, .2);
+    border-color: var(--gold);
+    outline: none;
+}
+
+/* ─── LOGIN PAGE (matches Figma mockup) ──────────────────── */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #f0eded;
+}
+
+/* Faded building background image */
+.login-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.login-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.08;
+    filter: grayscale(100%);
+}
+
+/* Centered container that holds logo + brand + card + footer */
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+
+/* CIT Logo */
+.login-logo-wrap {
+    margin-bottom: .75rem;
+}
+
+.login-seal {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+}
+
+/* Brand text / logo image */
+.login-brand {
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+}
+
+.login-brand-img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.brand-wildcats {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 2px;
+}
+
+.brand-techops {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--maroon);
+    letter-spacing: 2px;
+}
+
+/* Subtitle line with horizontal rules */
+.brand-subtitle-line {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin-top: .25rem;
+}
+
+.brand-subtitle-rule {
+    flex: 1;
+    height: 2px;
+    background: var(--gold);
+}
+
+.brand-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Maroon login card */
+.login-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: var(--maroon);
+    border-radius: 12px;
+    padding: 2.5rem 2.5rem 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+}
+
+.login-title {
+    font-family: 'Akshar', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    letter-spacing: 4px;
+}
+
+.login-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-label {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: .4rem;
+}
+
+.login-input {
+    display: block;
+    width: 100%;
+    padding: .65rem .75rem;
+    border: none;
+    border-radius: 4px;
+    background: #d9d9d9;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    transition: background .2s, box-shadow .2s;
+    outline: none;
+}
+
+.login-input:focus {
+    background: #e8e8e8;
+    box-shadow: 0 0 0 2px var(--gold);
+}
+
+/* Forgot Password link */
+.login-forgot-wrap {
+    text-align: right;
+    margin-top: .25rem;
+    margin-bottom: .5rem;
+}
+
+.login-forgot-link {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+    transition: opacity .15s;
+}
+
+.login-forgot-link:hover {
+    opacity: .8;
+    text-decoration: underline;
+}
+
+/* Gold SIGN IN button */
+.login-btn {
+    display: block;
+    width: 80%;
+    margin: 1.25rem auto 0;
+    padding: .75rem 1rem;
+    border: 2px solid var(--maroon-dark);
+    border-radius: 6px;
+    background: #F5C518;
+    color: var(--maroon);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background .2s, transform .15s;
+}
+
+.login-btn:hover {
+    background: #e0b310;
+    transform: translateY(-1px);
+}
+
+.login-btn:active {
+    transform: scale(.97);
+}
+
+/* Bottom link (below the card) */
+.login-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--maroon);
+}
+
+.login-create-link {
+    color: var(--gold);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-create-link:hover {
+    text-decoration: underline;
+}
+
+/* ─── REGISTER PAGE EXTRAS ───────────────────────────────── */
+
+/* Role badge shown on step 2 */
+.login-role-badge {
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-top: -.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Side-by-side button row (Back + Confirm) */
+.login-btn-row {
+    display: flex;
+    gap: .75rem;
+    margin-top: 1.25rem;
+}
+
+.login-btn-row .login-btn {
+    flex: 1;
+    width: auto;
+    margin: 0;
+    text-align: center;
+    text-decoration: none;
+}
+
+/* Outline variant for the back button */
+.login-btn.login-btn-outline {
+    background: transparent;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-btn.login-btn-outline:hover {
+    background: rgba(200, 169, 81, .15);
+}
+
+/* Required asterisk */
+.login-required {
+    color: #ff6b6b;
+    font-weight: 700;
+}
+
+/* Optional label */
+.login-optional {
+    color: rgba(255, 255, 255, .45);
+    font-weight: 400;
+    font-size: 11px;
+}
+
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: .35rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: .6rem .8rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color .2s;
+}
+
+.form-control:focus {
+    border-color: var(--maroon);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(120, 10, 13, .1);
+}
+
+select.form-control {
+    cursor: pointer;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 90px;
+}
+
+/* ─── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    text-decoration: none;
+}
+
+.btn:active {
+    transform: scale(.97);
+}
+
+.btn-primary {
+    background: var(--maroon);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--maroon-dark);
+}
+
+.btn-gold {
+    background: var(--gold);
+    color: var(--maroon);
+}
+
+.btn-gold:hover {
+    background: #b5933e;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--maroon);
+    border: 1.5px solid var(--maroon);
+}
+
+.btn-outline:hover {
+    background: rgba(120, 10, 13, .06);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: rgba(255, 255, 255, .75);
+    border: 1px solid rgba(255, 255, 255, .3);
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, .12);
+}
+
+.btn-ghost.active,
+.btn-ghost-selected {
+    background: var(--gold) !important;
+    color: var(--maroon) !important;
+    border-color: var(--gold) !important;
+    font-weight: 700;
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+.btn-sm {
+    padding: .35rem .75rem;
+    font-size: 12px;
+}
+
+/* Role select buttons row */
+.role-group {
+    display: flex;
+    gap: .6rem;
+    margin-bottom: 1rem;
+}
+
+.role-btn {
+    flex: 1;
+    padding: .55rem;
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, .15);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .15s;
+    text-align: center;
+}
+
+.role-btn.selected {
+    background: var(--gold);
+    color: var(--maroon);
+    border-color: var(--gold);
+    font-weight: 700;
+}
+
+/* ─── ERROR / ALERT ───────────────────────────────────────── */
+.alert {
+    padding: .7rem 1rem;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 1rem;
+}
+
+.alert-danger {
+    background: #fde8e8;
+    color: #c0392b;
+    border: 1px solid #f5c6c6;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.alert-warning {
+    background: #fff8e1;
+    color: #f57f17;
+    border: 1px solid #ffe082;
+}
+
+/* ─── APP SHELL (Top Nav Layout) ─────────────────────────── */
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Top Navbar */
+.top-nav {
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    z-index: 10;
+    position: sticky;
+    top: 0;
+}
+
+.nav-logos {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-cit-logo {
+    height: 48px;
+    object-fit: contain;
+}
+
+.nav-techops-logo {
+    height: 36px;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-link {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.nav-link:hover {
+    background: rgba(200, 169, 81, 0.1);
+    color: var(--gold);
+}
+
+.nav-link.active {
+    background: var(--gold);
+    color: var(--white);
+}
+
+.nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+}
+
+.nav-role-pill {
+    height: 28px;
+    object-fit: contain;
+}
+
+.nav-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--maroon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    border: 2px solid #e0e0e0;
+}
+
+/* ─── MAIN CONTENT ────────────────────────────────────────── */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+
+}
+
+.page-header {
+    margin-bottom: 1.75rem;
+}
+
+.page-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--maroon);
+}
+
+.page-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: .2rem;
+}
+
+/* ─── HERO BANNER ─────────────────────────────────────────── */
+.hero-banner {
+    background: #FDF1B6;
+    border-radius: var(--radius);
+    padding: 2rem;
+    color: var(--text);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hero-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    color: #666;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.hero-banner .hero-text h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #000;
+}
+
+.hero-banner .hero-text p {
+    font-size: 13px;
+    color: #555;
+    margin-top: .5rem;
+    max-width: 500px;
+}
+
+.btn-gold.hero-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 12px;
+    font-weight: 800;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* ─── TSG ALERT BANNER ─────────────────────────────────────── */
+.tsg-alert-banner {
+    background: #7D0000;
+    color: #FFEB3B;
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.tsg-alert-banner .alert-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    margin-right: 0.5rem;
+}
+
+.tsg-alert-banner .alert-message {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+}
+.alert-banner {
+    background: #FFF3CD;
+    border: 1.5px solid #FFC107;
+    border-radius: var(--radius);
+    padding: .9rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    color: #856404;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.alert-banner .icon {
+    font-size: 18px;
+}
+
+/* ─── DASHBOARD GRID & STATS ──────────────────────────────── */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 1000px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #1a1a1a;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.stat-card.border-maroon { border-top: 4px solid var(--maroon); }
+.stat-card.border-yellow { border-top: 4px solid var(--gold); }
+.stat-card.border-blue { border-top: 4px solid #1565C0; }
+.stat-card.border-green { border-top: 4px solid #2E7D32; }
+
+.stat-card .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.stat-card .stat-value {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+/* ─── CARDS ───────────────────────────────────────────────── */
+.card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--maroon);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* ─── TABLES ──────────────────────────────────────────────── */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+thead th {
+    background: var(--gold);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: .75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+}
+
+tbody tr:nth-child(odd) {
+    background: #FAFAFA;
+}
+
+tbody tr:nth-child(even) {
+    background: var(--white);
+}
+
+tbody tr:hover {
+    background: #FFF8F0;
+}
+
+tbody td {
+    padding: .7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.col-id {
+    color: var(--maroon);
+    font-weight: 700;
+}
+
+.col-unassigned {
+    color: #AAAAAA;
+}
+
+.col-assigned {
+    color: var(--maroon);
+    font-weight: 600;
+}
+
+.col-student {
+    color: var(--maroon);
+    font-weight: 600;
+}
+
+.col-faculty {
+    color: #555;
+    font-weight: 600;
+}
+
+/* ─── STATUS PILLS & KEY ──────────────────────────────────── */
+.pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    white-space: nowrap;
+}
+
+.pill-pending {
+    background: var(--white);
+    color: #E6A100;
+    border: 1px solid #E6A100;
+}
+
+.pill-inprogress {
+    background: #64B5F6;
+    color: var(--white);
+    border: 1px solid #64B5F6;
+}
+
+.pill-resolved {
+    background: #81C784;
+    color: var(--white);
+    border: 1px solid #81C784;
+}
+
+.status-key-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.status-key-item .key-desc {
+    font-size: 11px;
+    color: #777;
+    font-weight: 500;
+}
+
+/* ─── REPORT A DEFECT PAGE ────────────────────────────────── */
+.report-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.report-defect-card {
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.location-banner {
+    background: #F1F8E9;
+    border: 1px solid #C8E6C9;
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .form-row-2 { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: "▼";
+    font-size: 10px;
+    color: #333;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 30px;
+    background: #F9F9F9;
+    border: none;
+    border-radius: 4px;
+    height: 40px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+}
+
+.defect-textarea {
+    background: #F9F9F9;
+    border: none;
+    border-radius: 4px;
+    padding: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.btn-maroon {
+    background: var(--maroon);
+    color: var(--white);
+    border: none;
+}
+.btn-maroon:hover {
+    background: #600;
+}
+
+/* ─── COMPONENT CARDS (Report Defect) ────────────────────── */
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.component-card {
+    background: #F9F9F9;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    cursor: pointer;
+    transition: .2s;
+    user-select: none;
+}
+
+.component-card:hover {
+    background: #F0F0F0;
+}
+
+.component-card.selected {
+    background: #F2D2D2;
+    border-color: #D6A4A4;
+}
+
+.component-card .comp-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    transition: 0.2s;
+    filter: grayscale(100%) opacity(0.7);
+}
+
+.component-card.selected .comp-icon img {
+    filter: none;
+}
+
+.component-card .comp-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+    color: #555;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.component-card.selected .comp-label {
+    color: var(--maroon);
+}
+
+/* ─── UPLOAD ZONE ─────────────────────────────────────────── */
+.upload-zone {
+    border: 1px dashed #CCC;
+    border-radius: 6px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    margin-top: 0.5rem;
+}
+
+.upload-zone:hover {
+    background: #FAFAFA;
+    border-color: #999;
+}
+
+.upload-zone input[type=file] {
+    display: none;
+}
+
+/* ─── PROFILE PAGE ────────────────────────────────────────── */
+.profile-card-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profile-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: var(--white);
+    overflow: hidden;
+}
+
+.profile-hero.maroon-hero {
+    background: var(--maroon);
+    padding: 2.5rem 3rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--white);
+    border-radius: 0;
+}
+
+.profile-avatar-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--white);
+    border: 2px solid var(--white);
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-hero-text h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+
+.profile-hero-text .subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.btn-outline-white {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--white);
+    transition: 0.2s;
+}
+
+.btn-outline-white:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-divider {
+    border: 0;
+    border-top: 2px solid var(--gold);
+    margin: 0;
+}
+
+.profile-card-body {
+    padding: 3rem;
+}
+
+
+
+/* ─── MODAL ───────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-box {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .2);
+}
+
+.modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--maroon);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: 1.5rem;
+}
+
+/* Detail overlay inside TSG dashboard */
+.detail-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+.detail-overlay.hidden {
+    display: none;
+}
+
+.detail-box {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 420px;
+    max-width: 95vw;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, .25);
+}
+
+/* ─── CHARTS PLACEHOLDER ──────────────────────────────────── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 800px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-container {
+    height: 260px;
+    position: relative;
+}
+
+/* ─── UTILITIES ───────────────────────────────────────────── */
+.d-flex {
+    display: flex;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-1 {
+    gap: .5rem;
+}
+
+.gap-2 {
+    gap: 1rem;
+}
+
+.mt-1 {
+    margin-top: .5rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+.mb-1 {
+    margin-bottom: .5rem;
+}
+
+.mb-2 {
+    margin-bottom: 1rem;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-maroon {
+    color: var(--maroon);
+    font-weight: 600;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+
+.small {
+    font-size: 12px;
+}
+
+.w-100 {
+    width: 100%;
+}
