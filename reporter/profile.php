@@ -75,7 +75,7 @@ layout_sidebar($user, 'profile');
             <div class="profile-info-grid">
                 <div class="info-field">
                     <label>UNIVERSITY ID:</label>
-                    <div class="value-box"><?= htmlspecialchars($user['roleID']) ?></div>
+                    <div class="value-box"><?= htmlspecialchars($user['universityID']) ?></div>
                 </div>
                 <div class="info-field">
                     <label>FULL NAME:</label>

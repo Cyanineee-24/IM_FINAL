@@ -68,6 +68,16 @@ $old = $_SESSION['register_step1'] ?? [];
                 </div>
 
                 <div class="login-form-group">
+                    <label class="login-label" for="university_id">University ID:</label>
+                    <input class="login-input" type="text" id="university_id" name="university_id"
+                           placeholder="e.g. 20-3423-676"
+                           pattern="\d{2}-\d{4}-\d{3}"
+                           title="Format must be XX-XXXX-XXX"
+                           value="<?= htmlspecialchars($old['university_id'] ?? '') ?>"
+                           required>
+                </div>
+
+                <div class="login-form-group">
                     <label class="login-label" for="email">University Email:</label>
                     <input class="login-input" type="email" id="email" name="email"
                            value="<?= htmlspecialchars($old['email'] ?? '') ?>"

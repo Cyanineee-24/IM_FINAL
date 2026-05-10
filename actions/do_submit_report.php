@@ -15,13 +15,22 @@ $workstationId = (int) ($_POST['workstation_id'] ?? 0);
 $component     = trim($_POST['component']         ?? '');
 $description   = trim($_POST['description']       ?? '');
 
-$validComponents = ['Mouse','Keyboard','Display','RAM','System Unit','Audio'];
+$validComponents = [
+    'MOUSE'       => 'Mouse',
+    'KEYBOARD'    => 'Keyboard',
+    'DISPLAY'     => 'Display',
+    'RAM'         => 'RAM',
+    'SYSTEM UNIT' => 'System Unit',
+    'AUDIO'       => 'Audio'
+];
 
-if ($workstationId === 0 || $component === '' || !in_array($component, $validComponents, true)) {
+if ($workstationId === 0 || $component === '' || !isset($validComponents[$component])) {
     $_SESSION['report_error'] = 'Please fill in all required fields (lab, workstation, and component).';
     header('Location: ../reporter/report_defect.php');
     exit;
 }
+
+$dbComponent = $validComponents[$component];
 
 $db = get_db();
 
@@ -30,7 +39,7 @@ $st = $db->prepare(
     'INSERT INTO DefectReport (Status, Component, Description, WorkstationID)
      VALUES (\'Pending\', ?, ?, ?)'
 );
-$st->execute([$component, $description ?: null, $workstationId]);
+$st->execute([$dbComponent, $description ?: null, $workstationId]);
 $reportId = (int) $db->lastInsertId();
 
 // Link to reporter

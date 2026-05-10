@@ -8,12 +8,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$universityID = trim($_POST['university_id'] ?? '');
 $email    = trim($_POST['email']    ?? '');
 $password =      $_POST['password'] ?? '';
 $reEnter  =      $_POST['re_enter'] ?? '';
 $roleBtn  = trim($_POST['role']     ?? '');
 
 // ── Validation (mirrors CreateViewController) ──────────────
+if (!preg_match('/^\d{2}-\d{4}-\d{3}$/', $universityID)) {
+    $_SESSION['register_error'] = 'Invalid University ID format. Must be XX-XXXX-XXX.';
+    header('Location: ../register.php');
+    exit;
+}
 if ($email === '') {
     $_SESSION['register_error'] = 'Please enter your university email.';
     header('Location: ../register.php');
@@ -45,6 +51,7 @@ $role = $roleMap[$roleBtn] ?? 'Student';
 
 // Stash step-1 data in session for step 2
 $_SESSION['register_step1'] = [
+    'university_id' => $universityID,
     'email'    => $email,
     'password' => $password,
     'role'     => $role,

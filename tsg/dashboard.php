@@ -38,7 +38,7 @@ $assigned = $db->query("
     LEFT JOIN TSG_Personnel tp ON tp.PersonnelID = dr.AssignedPersonnelID
     LEFT JOIN Faculty pf       ON pf.FacultyID   = tp.FacultyID
     LEFT JOIN `User` pu        ON pu.UID          = pf.UID
-    WHERE dr.AssignedPersonnelID = " . (int)$user['roleID'] . "
+    WHERE tp.FacultyID = " . (int)$user['roleID'] . "
     ORDER BY dr.DateFiled DESC
 ")->fetchAll();
 

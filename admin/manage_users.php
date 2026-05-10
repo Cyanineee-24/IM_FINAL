@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Insert User
             $st = $db->prepare('INSERT INTO `User` (Email, Password, FirstName, LastName, Contact) VALUES (?, ?, ?, ?, ?)');
-            $st->execute([$email, $password, $firstName, $lastName, '00000000000']);
+            $st->execute([$email, password_hash($password, PASSWORD_DEFAULT), $firstName, $lastName, '00000000000']);
             $uid = $db->lastInsertId();
             
             // Insert Faculty

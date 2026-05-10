@@ -194,6 +194,7 @@ INSERT INTO `tsg_personnel` (`PersonnelID`, `FacultyID`) VALUES
 
 CREATE TABLE `user` (
   `UID` int(11) NOT NULL,
+  `UniversityID` varchar(20) DEFAULT NULL,
   `Email` varchar(255) NOT NULL,
   `Password` varchar(255) NOT NULL,
   `FirstName` varchar(100) NOT NULL,
@@ -350,7 +351,8 @@ ALTER TABLE `tsg_personnel`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`UID`),
-  ADD UNIQUE KEY `Email` (`Email`);
+  ADD UNIQUE KEY `Email` (`Email`),
+  ADD UNIQUE KEY `UniversityID` (`UniversityID`);
 
 --
 -- Indexes for table `workstation`

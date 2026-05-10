@@ -8,21 +8,23 @@ require_once __DIR__ . '/db.php';
  */
 function auth_login(string $email, string $password): ?array {
     $db  = get_db();
-    $sql = 'SELECT UID, FirstName, MiddleName, LastName FROM `User` WHERE Email = ? AND Password = ?';
+    $sql = 'SELECT UID, UniversityID, FirstName, MiddleName, LastName, Password FROM `User` WHERE Email = ?';
     $st  = $db->prepare($sql);
-    $st->execute([$email, $password]);
+    $st->execute([$email]);
     $row = $st->fetch();
 
     if (!$row) return null;
+    if (!password_verify($password, $row['Password'])) return null;
 
     $uid  = $row['UID'];
     $role = detect_role($uid);
     $roleID = get_role_id($uid, $role);
 
     return [
-        'uid'        => $uid,
-        'email'      => $email,
-        'firstName'  => $row['FirstName'],
+        'uid'          => $uid,
+        'universityID' => $row['UniversityID'],
+        'email'        => $email,
+        'firstName'    => $row['FirstName'],
         'middleName' => $row['MiddleName'],
         'lastName'   => $row['LastName'],
         'role'       => $role,
@@ -35,19 +37,20 @@ function auth_login(string $email, string $password): ?array {
  * Mirrors AuthService::register()
  */
 function auth_register(
-    string $email, string $password,
+    string $universityID, string $email, string $password,
     string $firstName, string $middleName, string $lastName,
     string $contact, string $role,
     string $course = '', int $yearLevel = 0
 ): bool {
     $db  = get_db();
-    $sql = 'INSERT INTO `User` (Email, Password, FirstName, MiddleName, LastName, Contact)
-            VALUES (?, ?, ?, ?, ?, ?)';
+    $sql = 'INSERT INTO `User` (UniversityID, Email, Password, FirstName, MiddleName, LastName, Contact)
+            VALUES (?, ?, ?, ?, ?, ?, ?)';
     try {
         $st = $db->prepare($sql);
         $st->execute([
+            $universityID,
             $email,
-            $password,
+            password_hash($password, PASSWORD_DEFAULT),
             $firstName,
             $middleName !== '' ? $middleName : null,
             $lastName,

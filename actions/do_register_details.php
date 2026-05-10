@@ -48,7 +48,7 @@ if ($role === 'Student') {
 }
 
 $success = auth_register(
-    $step1['email'], $step1['password'],
+    $step1['university_id'], $step1['email'], $step1['password'],
     $firstName, $middleName, $lastName,
     $contact, $role,
     $course, $yearLevel
