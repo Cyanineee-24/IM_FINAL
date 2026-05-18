@@ -6,7 +6,6 @@ require_once ROOT . '/includes/db.php';
 require_once ROOT . '/includes/layout.php';
 
 $user = require_auth();
-// Redirect TSG to their own dashboard
 if ($user['role'] === 'TSG Personnel') redirect_to_dashboard('TSG Personnel');
 
 $db = get_db();
@@ -15,7 +14,6 @@ $db = get_db();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_report'])) {
     $report_id = (int)$_POST['report_id'];
     
-    // Verify the report belongs to the current user and is pending
     $checkSQL = "
         SELECT dr.ReportID, dr.Status
         FROM DefectReport dr
@@ -31,8 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_report'])) {
     if ($st->fetch()) {
         try {
             $db->beginTransaction();
-            
-            // Delete from the appropriate reporter table first
             if ($user['role'] === 'Student') {
                 $stmt = $db->prepare("DELETE FROM ReportStudent WHERE ReportID = ?");
                 $stmt->execute([$report_id]);
@@ -40,11 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_report'])) {
                 $stmt = $db->prepare("DELETE FROM ReportFaculty WHERE ReportID = ?");
                 $stmt->execute([$report_id]);
             }
-            
-            // Then delete from DefectReport
             $stmt = $db->prepare("DELETE FROM DefectReport WHERE ReportID = ?");
             $stmt->execute([$report_id]);
-            
             $db->commit();
             $_SESSION['report_success'] = "Report #$report_id has been deleted successfully.";
         } catch (PDOException $e) {
@@ -75,7 +68,7 @@ $st = $db->prepare($statsSQL);
 $st->execute([$user['roleID']]);
 $stats = $st->fetch();
 
-// ── Recent reports (increased limit to show more, but we'll limit display to 10)
+// ── Recent reports
 $recentSQL = "
     SELECT dr.ReportID, w.WorkstationNo, l.LabName, dr.Component, dr.Status, dr.DateFiled, dr.Description,
            CONCAT(u.FirstName, ' ', u.LastName) AS AssignedTo
@@ -96,103 +89,68 @@ $st->execute([$user['roleID']]);
 $recent = $st->fetchAll();
 
 $success = $_SESSION['report_success'] ?? null;
-$error = $_SESSION['report_error'] ?? null;
-unset($_SESSION['report_success']);
-unset($_SESSION['report_error']);
+$error   = $_SESSION['report_error']   ?? null;
+unset($_SESSION['report_success'], $_SESSION['report_error']);
 
 layout_head('Dashboard');
 layout_sidebar($user, 'dashboard');
 ?>
 
 <style>
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-.btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    font-size: 14px;
-}
-.btn-edit {
-    color: #ffc107;
-    background: rgba(255, 193, 7, 0.1);
-}
-.btn-edit:hover {
-    background: rgba(255, 193, 7, 0.2);
-    transform: scale(1.05);
-}
-.btn-delete {
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-}
-.btn-delete:hover {
-    background: rgba(220, 53, 69, 0.2);
-    transform: scale(1.05);
-}
-.modal {
+.action-buttons { display:flex; gap:8px; justify-content:center; }
+.btn-icon { background:none; border:none; cursor:pointer; padding:4px 8px; border-radius:4px; transition:all 0.2s ease; font-size:14px; }
+.btn-edit  { color:#ffc107; background:rgba(255,193,7,0.1); }
+.btn-edit:hover  { background:rgba(255,193,7,0.2); transform:scale(1.05); }
+.btn-delete { color:#dc3545; background:rgba(220,53,69,0.1); }
+.btn-delete:hover { background:rgba(220,53,69,0.2); transform:scale(1.05); }
+
+/* Shared overlay */
+.custom-overlay {
     display: none;
     position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    animation: fadeIn 0.3s;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s;
 }
-.modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 0;
+.custom-overlay.active { display: flex; }
+.custom-modal {
+    background: #fff;
     border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    animation: slideDown 0.3s;
+    padding: 2rem;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    animation: slideDown 0.25s;
 }
-.modal-header {
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-    border-bottom: 1px solid #e0e0e0;
-}
-.modal-body {
-    padding: 1.5rem;
-}
-.modal-footer {
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
-    border-top: 1px solid #e0e0e0;
+.modal-top {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
 }
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.modal-top h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--maroon);
+    margin: 0;
+    letter-spacing: 0.5px;
 }
-@keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
 }
-.edit-form-group {
-    margin-bottom: 1rem;
-}
-.edit-form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #333;
-}
+.modal-divider { border: 0; border-top: 2px solid var(--gold); margin-bottom: 1.25rem; }
+.modal-actions { display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem; }
+.edit-form-group { margin-bottom: 1rem; }
+.edit-form-group label { display:block; margin-bottom:0.4rem; font-size:10px; font-weight:700; color:#888; text-transform:uppercase; }
 .edit-form-group select,
 .edit-form-group textarea {
     width: 100%;
@@ -200,40 +158,24 @@ layout_sidebar($user, 'dashboard');
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
+    font-family: inherit;
 }
-.btn-modal-cancel {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.btn-modal-save {
-    background: var(--maroon, #800000);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
+.delete-message { font-size:14px; color:#1a1a1a; margin-bottom:0.5rem; }
+.delete-warning { font-size:12px; color:#dc3545; font-weight:600; }
+@keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes slideDown { from{transform:translateY(-40px);opacity:0} to{transform:translateY(0);opacity:1} }
 </style>
 
-<!-- Dashboard content centered -->
 <div class="dashboard-centered">
-
-    <!-- /Main Column -->
     <div class="dashboard-main">
-        
+
         <?php if ($success): ?>
             <div class="alert alert-success" style="margin-bottom:1rem;"><?= htmlspecialchars($success) ?></div>
         <?php endif; ?>
-        
         <?php if ($error): ?>
             <div class="alert alert-danger" style="margin-bottom:1rem;"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <!-- Yellow Hero banner -->
         <div class="hero-banner reporter-hero">
             <div class="hero-text">
                 <span class="hero-subtitle">NGE LABORATORY</span>
@@ -244,8 +186,7 @@ layout_sidebar($user, 'dashboard');
         </div>
 
         <h3 class="section-title">MY REPORT SUMMARY</h3>
-        
-        <!-- Stats row with top colored borders -->
+
         <div class="stats-row">
             <div class="stat-card border-maroon">
                 <span class="stat-value"><?= (int)($stats['total'] ?? 0) ?></span>
@@ -293,18 +234,16 @@ layout_sidebar($user, 'dashboard');
                             <td><?= date('m/d/y', strtotime($row['DateFiled'])) ?></td>
                             <td class="action-buttons">
                                 <?php if ($row['Status'] === 'Pending'): ?>
-                                    <button class="btn-icon btn-edit" onclick="openEditModal(<?= htmlspecialchars(json_encode([
-                                        'id' => $row['ReportID'],
-                                        'component' => $row['Component'],
-                                        'description' => $row['Description']
-                                    ])) ?>)" title="Edit Report">
-                                        ✏️
-                                    </button>
-                                    <button class="btn-icon btn-delete" onclick="confirmDelete(<?= $row['ReportID'] ?>)" title="Delete Report">
-                                        🗑️
-                                    </button>
+                                    <button class="btn-icon btn-edit" title="Edit Report"
+                                        onclick="openEditModal(<?= htmlspecialchars(json_encode([
+                                            'id'          => $row['ReportID'],
+                                            'component'   => $row['Component'],
+                                            'description' => $row['Description']
+                                        ])) ?>)">Edit</button>
+                                    <button class="btn-icon btn-delete" title="Delete Report"
+                                        onclick="openDeleteModal(<?= $row['ReportID'] ?>, '<?= htmlspecialchars($row['Component']) ?>')">Delete</button>
                                 <?php else: ?>
-                                    <span style="color: #999; font-size: 12px;">No actions</span>
+                                    <span style="color:#999; font-size:12px;">No actions</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -312,85 +251,100 @@ layout_sidebar($user, 'dashboard');
                     </tbody>
                 </table>
             </div>
-            <div class="card-footer" style="text-align: right; padding: 1rem 1.5rem;">
+            <div class="card-footer" style="text-align:right; padding:1rem 1.5rem;">
                 <a href="logs.php" class="view-more-link">VIEW MORE</a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
+<!-- ── Edit Modal ──────────────────────────────────────────────────────────── -->
+<div id="editOverlay" class="custom-overlay">
+    <div class="custom-modal">
+        <div class="modal-top">
+            <h2>EDIT REPORT</h2>
+            <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+        </div>
+        <hr class="modal-divider">
         <form method="POST" action="update_report.php">
-            <div class="modal-header">
-                <h3 style="margin:0; color: var(--maroon, #800000);">Edit Report</h3>
+            <input type="hidden" name="report_id" id="edit_report_id">
+            <div class="edit-form-group">
+                <label for="edit_component">Component</label>
+                <select name="component" id="edit_component" required>
+                    <option value="MOUSE">Mouse</option>
+                    <option value="KEYBOARD">Keyboard</option>
+                    <option value="DISPLAY">Display</option>
+                    <option value="RAM">RAM</option>
+                    <option value="SYSTEM UNIT">System Unit</option>
+                    <option value="AUDIO">Audio</option>
+                </select>
             </div>
-            <div class="modal-body">
-                <input type="hidden" name="report_id" id="edit_report_id">
-                
-                <div class="edit-form-group">
-                    <label for="edit_component">Component *</label>
-                    <select name="component" id="edit_component" required>
-                        <option value="MOUSE">Mouse</option>
-                        <option value="KEYBOARD">Keyboard</option>
-                        <option value="DISPLAY">Display</option>
-                        <option value="RAM">RAM</option>
-                        <option value="SYSTEM UNIT">System Unit</option>
-                        <option value="AUDIO">Audio</option>
-                    </select>
-                </div>
-                
-                <div class="edit-form-group">
-                    <label for="edit_description">Description *</label>
-                    <textarea name="description" id="edit_description" rows="4" required placeholder="Describe the defect..."></textarea>
-                </div>
+            <div class="edit-form-group">
+                <label for="edit_description">Description</label>
+                <textarea name="description" id="edit_description" rows="4" required placeholder="Describe the defect..."></textarea>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-modal-cancel" onclick="closeEditModal()">Cancel</button>
-                <button type="submit" name="update_report" class="btn-modal-save">Save Changes</button>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">CANCEL</button>
+                <button type="submit" name="update_report" class="btn btn-maroon">SAVE CHANGES</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Delete Confirmation Form -->
-<form id="deleteForm" method="POST" action="" style="display: none;">
-    <input type="hidden" name="delete_report" value="1">
-    <input type="hidden" name="report_id" id="delete_report_id">
-</form>
+<!-- ── Delete Confirmation Modal ──────────────────────────────────────────── -->
+<div id="deleteOverlay" class="custom-overlay">
+    <div class="custom-modal">
+        <div class="modal-top">
+            <h2>DELETE REPORT</h2>
+            <button class="modal-close-btn" onclick="closeDeleteModal()">✕</button>
+        </div>
+        <hr class="modal-divider">
+        <p class="delete-message">Are you sure you want to delete <strong id="deleteReportLabel"></strong>?</p>
+        <p class="delete-warning">⚠ This action cannot be undone.</p>
+        <form id="deleteForm" method="POST" action="">
+            <input type="hidden" name="delete_report" value="1">
+            <input type="hidden" name="report_id" id="delete_report_id">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">CANCEL</button>
+                <button type="submit" class="btn btn-maroon" style="background:#dc3545; border-color:#dc3545;">DELETE</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
+// ── Edit modal
 function openEditModal(report) {
-    document.getElementById('edit_report_id').value = report.id;
-    document.getElementById('edit_component').value = report.component;
+    document.getElementById('edit_report_id').value   = report.id;
+    document.getElementById('edit_component').value   = report.component;
     document.getElementById('edit_description').value = report.description;
-    document.getElementById('editModal').style.display = 'block';
+    document.getElementById('editOverlay').classList.add('active');
 }
-
 function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('editOverlay').classList.remove('active');
 }
 
-function confirmDelete(reportId) {
-    if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-        const form = document.getElementById('deleteForm');
-        form.action = window.location.href;
-        document.getElementById('delete_report_id').value = reportId;
-        form.submit();
-    }
+// ── Delete modal
+function openDeleteModal(reportId, component) {
+    document.getElementById('delete_report_id').value  = reportId;
+    document.getElementById('deleteReportLabel').textContent = 'Report #' + reportId + ' (' + component + ')';
+    document.getElementById('deleteForm').action = window.location.href;
+    document.getElementById('deleteOverlay').classList.add('active');
+}
+function closeDeleteModal() {
+    document.getElementById('deleteOverlay').classList.remove('active');
 }
 
-// Close modal when clicking outside of it
-window.onclick = function(event) {
-    const modal = document.getElementById('editModal');
-    if (event.target === modal) {
-        closeEditModal();
-    }
-}
+// Close on backdrop click
+document.getElementById('editOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+document.getElementById('deleteOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
 </script>
 
-<?php 
+<?php
 layout_foot();
 
 function status_pill(string $status): string {

@@ -9,6 +9,14 @@ $user = require_auth('Admin');
 
 $db = get_db();
 
+// ── Pagination settings ───────────────────────────────────────────────────────
+$assignedLimit    = 4;
+$unassignedLimit  = 8;
+$assignedPage     = isset($_GET['apage'])  ? max(1, (int)$_GET['apage'])  : 1;
+$unassignedPage   = isset($_GET['upage'])  ? max(1, (int)$_GET['upage'])  : 1;
+$assignedOffset   = ($assignedPage   - 1) * $assignedLimit;
+$unassignedOffset = ($unassignedPage - 1) * $unassignedLimit;
+
 // ── Stat counts ──────────────────────────────────────────────────────────────
 $stats = $db->query("
     SELECT
@@ -18,6 +26,12 @@ $stats = $db->query("
         SUM(Status = 'Resolved' AND DATE(DateFiled) = CURDATE()) AS resolvedToday
     FROM DefectReport
 ")->fetch();
+
+// ── Assigned reports total count ─────────────────────────────────────────────
+$assignedTotal = $db->query("
+    SELECT COUNT(*) AS cnt FROM DefectReport WHERE AssignedPersonnelID IS NOT NULL
+")->fetch()['cnt'];
+$assignedPages = max(1, ceil($assignedTotal / $assignedLimit));
 
 // ── Assigned reports ─────────────────────────────────────────────────────────
 $assigned = $db->query("
@@ -50,8 +64,14 @@ $assigned = $db->query("
     LEFT JOIN `User` pu        ON pu.UID          = pf.UID
     WHERE dr.AssignedPersonnelID IS NOT NULL
     ORDER BY dr.DateFiled DESC
-    LIMIT 20
+    LIMIT $assignedLimit OFFSET $assignedOffset
 ")->fetchAll();
+
+// ── Unassigned reports total count ───────────────────────────────────────────
+$unassignedTotal = $db->query("
+    SELECT COUNT(*) AS cnt FROM DefectReport WHERE AssignedPersonnelID IS NULL
+")->fetch()['cnt'];
+$unassignedPages = max(1, ceil($unassignedTotal / $unassignedLimit));
 
 // ── Unassigned reports ───────────────────────────────────────────────────────
 $unassigned = $db->query("
@@ -78,6 +98,7 @@ $unassigned = $db->query("
     LEFT JOIN `User` fu        ON fu.UID         = fac2.UID
     WHERE dr.AssignedPersonnelID IS NULL
     ORDER BY dr.DateFiled ASC
+    LIMIT $unassignedLimit OFFSET $unassignedOffset
 ")->fetchAll();
 
 // ── TSG Personnel list for assign dropdown ────────────────────────────────────
@@ -106,8 +127,6 @@ $byStatus = $db->query("
 layout_head('TSG Dashboard');
 layout_sidebar($user, 'dashboard');
 ?>
-
-
 
 <!-- Alert banner when there are unassigned reports -->
 <?php if ((int)$stats['unassigned'] > 0): ?>
@@ -193,7 +212,24 @@ layout_sidebar($user, 'dashboard');
         </table>
     </div>
 
-    <!-- Detail overlay for assigned reports (reassign personnel) -->
+    <!-- Assigned pagination controls -->
+    <?php if ($assignedPages > 1): ?>
+    <div class="pagination-controls">
+        <?php if ($assignedPage > 1): ?>
+            <a class="page-btn" href="?apage=<?= $assignedPage - 1 ?>&upage=<?= $unassignedPage ?>#assignedCard">&lt;&lt;</a>
+        <?php else: ?>
+            <span class="page-btn disabled">&lt;&lt;</span>
+        <?php endif; ?>
+        <span class="page-info">Page <?= $assignedPage ?> of <?= $assignedPages ?></span>
+        <?php if ($assignedPage < $assignedPages): ?>
+            <a class="page-btn" href="?apage=<?= $assignedPage + 1 ?>&upage=<?= $unassignedPage ?>#assignedCard">&gt;&gt;</a>
+        <?php else: ?>
+            <span class="page-btn disabled">&gt;&gt;</span>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Detail overlay for assigned reports -->
     <div class="detail-overlay hidden" id="assignedDetailOverlay">
         <div class="detail-box">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
@@ -212,13 +248,12 @@ layout_sidebar($user, 'dashboard');
                 <div class="info-field"><label>Date Filed</label><div class="value" id="aDetailDate"></div></div>
             </div>
 
-            <!-- Description -->
             <div class="form-group">
                 <label class="form-label">Description</label>
                 <div class="value" id="aDetailDesc" style="padding:.6rem .75rem;background:#f5f5f5;border-radius:6px;font-size:13px;min-height:48px"></div>
             </div>
 
-            <!-- Resolved by (shown only when status is Resolved) -->
+            <!-- Resolved state -->
             <div id="aResolvedBySection" style="margin-top:1rem;display:none">
                 <div class="form-group">
                     <label class="form-label">Resolved by</label>
@@ -229,34 +264,29 @@ layout_sidebar($user, 'dashboard');
                 </div>
             </div>
 
-            <!-- Action Forms (shown only when status is NOT Resolved) -->
-            <div id="aReassignForm" style="margin-top:1rem; display: flex; gap: 1rem; align-items: flex-end;">
-                <!-- Reassign personnel form -->
-                <form method="POST" action="<?= base_url('actions/do_assign_personnel.php') ?>" style="flex: 1;">
-                    <input type="hidden" name="report_id" id="aAssignReportId">
-                    <div class="form-group" style="margin-bottom: 0;">
+            <!-- Active state: reassign + resolve buttons -->
+            <div id="aReassignForm" style="margin-top:1rem; display:flex; gap:1rem; align-items:flex-end;">
+                <div style="flex:1">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label">Reassign Personnel</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <select class="form-control" name="personnel_id" id="aPersonnelSelect" required style="flex: 1;">
+                        <div style="display:flex; gap:0.5rem;">
+                            <select class="form-control" id="aPersonnelSelect" style="flex:1;">
                                 <option value="">Select TSG Personnel</option>
                                 <?php foreach ($personnel as $p): ?>
                                     <option value="<?= $p['PersonnelID'] ?>"><?= htmlspecialchars($p['FullName']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <button type="submit" class="btn btn-primary">Reassign</button>
+                            <!-- Triggers reassign confirmation modal -->
+                            <button type="button" class="btn btn-primary" onclick="openReassignConfirm()">Reassign</button>
                         </div>
                     </div>
-                </form>
-
-                <!-- Mark as Resolved form -->
-                <form method="POST" action="<?= base_url('actions/do_update_status.php') ?>">
-                    <input type="hidden" name="report_id" id="aResolveReportId">
-                    <input type="hidden" name="new_status" value="Resolved">
-                    <button type="submit" class="btn btn-primary" style="background: #2E7D32; border-color: #2E7D32; height: 38px;">Mark Resolved</button>
-                </form>
+                </div>
+                <!-- Triggers resolve confirmation modal -->
+                <button type="button" class="btn btn-primary" style="background:#2E7D32; border-color:#2E7D32; height:38px;"
+                    onclick="openResolveConfirm()">Mark Resolved</button>
             </div>
-            
-            <div class="modal-actions" style="margin-top: 1.5rem;" id="aCancelAction">
+
+            <div class="modal-actions" style="margin-top:1.5rem;" id="aCancelAction">
                 <button type="button" class="btn btn-outline" onclick="closeAssignedDetail()">Cancel</button>
             </div>
         </div>
@@ -297,7 +327,24 @@ layout_sidebar($user, 'dashboard');
         </table>
     </div>
 
-    <!-- Detail overlay (mirrors overlayPane in tsg-main-view.fxml) -->
+    <!-- Unassigned pagination controls -->
+    <?php if ($unassignedPages > 1): ?>
+    <div class="pagination-controls">
+        <?php if ($unassignedPage > 1): ?>
+            <a class="page-btn" href="?apage=<?= $assignedPage ?>&upage=<?= $unassignedPage - 1 ?>#unassignedCard">&lt;&lt;</a>
+        <?php else: ?>
+            <span class="page-btn disabled">&lt;&lt;</span>
+        <?php endif; ?>
+        <span class="page-info">Page <?= $unassignedPage ?> of <?= $unassignedPages ?></span>
+        <?php if ($unassignedPage < $unassignedPages): ?>
+            <a class="page-btn" href="?apage=<?= $assignedPage ?>&upage=<?= $unassignedPage + 1 ?>#unassignedCard">&gt;&gt;</a>
+        <?php else: ?>
+            <span class="page-btn disabled">&gt;&gt;</span>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- Detail overlay for unassigned reports -->
     <div class="detail-overlay hidden" id="detailOverlay">
         <div class="detail-box">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
@@ -316,87 +363,123 @@ layout_sidebar($user, 'dashboard');
                 <div class="info-field"><label>Date Filed</label><div class="value" id="detailDate"></div></div>
             </div>
 
-            <!-- Description -->
             <div class="form-group">
                 <label class="form-label">Description</label>
                 <div class="value" id="detailDesc" style="padding:.6rem .75rem;background:#f5f5f5;border-radius:6px;font-size:13px;min-height:48px"></div>
             </div>
 
-            <!-- Assign personnel (mirrors cmbAssignPersonnel + btnAssignPersonnel) -->
-            <form method="POST" action="<?= base_url('actions/do_assign_personnel.php') ?>" style="margin-top:1rem">
-                <input type="hidden" name="report_id" id="assignReportId">
-                <div class="form-group">
-                    <label class="form-label">Assign Personnel</label>
-                    <select class="form-control" name="personnel_id" required>
-                        <option value="">Select TSG Personnel</option>
-                        <?php foreach ($personnel as $p): ?>
-                            <option value="<?= $p['PersonnelID'] ?>"><?= htmlspecialchars($p['FullName']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeDetail()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Assign</button>
-                </div>
-            </form>
+            <div class="form-group" style="margin-top:1rem;">
+                <label class="form-label">Assign Personnel</label>
+                <select class="form-control" id="unassignedPersonnelSelect">
+                    <option value="">Select TSG Personnel</option>
+                    <?php foreach ($personnel as $p): ?>
+                        <option value="<?= $p['PersonnelID'] ?>"><?= htmlspecialchars($p['FullName']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeDetail()">Cancel</button>
+                <!-- Triggers assign confirmation modal -->
+                <button type="button" class="btn btn-primary" onclick="openAssignConfirm()">Assign</button>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
-// Bar chart — reports per lab
-const labLabels  = <?= json_encode(array_column($perLab, 'LabName')) ?>;
-const labCounts  = <?= json_encode(array_column($perLab, 'cnt')) ?>;
+<!-- ── Assign Confirmation Modal ──────────────────────────────────────────── -->
+<div id="assignConfirmOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:2rem; width:100%; max-width:420px; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+            <h2 style="font-family:'Montserrat',sans-serif; font-size:15px; font-weight:800; color:var(--maroon); margin:0; letter-spacing:0.5px;">CONFIRM ASSIGNMENT</h2>
+            <button onclick="closeAssignConfirm()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+        </div>
+        <hr style="border:0; border-top:2px solid var(--gold); margin-bottom:1.25rem;">
+        <p style="font-size:14px; color:#1a1a1a; margin-bottom:0.5rem;">
+            Assign <strong id="confirmPersonnelName"></strong> to Report <strong id="confirmAssignReportId"></strong>?
+        </p>
+        <p style="font-size:12px; color:#888; margin-bottom:1.5rem;">The personnel will be notified and the report status will change to <strong>In-Progress</strong>.</p>
+        <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button type="button" onclick="closeAssignConfirm()" class="btn btn-outline" style="font-size:11px; font-weight:700; padding:0.5rem 1.25rem;">CANCEL</button>
+            <button type="button" onclick="submitAssign()" class="btn btn-primary" style="font-size:11px; font-weight:700; padding:0.5rem 1.25rem;">CONFIRM</button>
+        </div>
+    </div>
+</div>
 
-// Pie chart — status distribution
-const statusData = <?= json_encode(array_column($byStatus, 'cnt')) ?>;
-const statusLabels = <?= json_encode(array_column($byStatus, 'Status')) ?>;
+<!-- Hidden assign form -->
+<form id="assignForm" method="POST" action="<?= base_url('actions/do_assign_personnel.php') ?>" style="display:none;">
+    <input type="hidden" name="report_id"    id="hiddenAssignReportId">
+    <input type="hidden" name="personnel_id" id="hiddenPersonnelId">
+</form>
+
+<!-- ── Resolve Confirmation Modal ─────────────────────────────────────────── -->
+<div id="resolveConfirmOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:2rem; width:100%; max-width:420px; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+            <h2 style="font-family:'Montserrat',sans-serif; font-size:15px; font-weight:800; color:var(--maroon); margin:0; letter-spacing:0.5px;">CONFIRM RESOLUTION</h2>
+            <button onclick="closeResolveConfirm()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+        </div>
+        <hr style="border:0; border-top:2px solid var(--gold); margin-bottom:1.25rem;">
+        <p style="font-size:14px; color:#1a1a1a; margin-bottom:0.5rem;">
+            Mark Report <strong id="confirmResolveReportId"></strong> as <strong style="color:#2E7D32;">Resolved</strong>?
+        </p>
+        <p style="font-size:12px; color:#888; margin-bottom:1.5rem;">This will close the report and mark it as completed. This action cannot be undone.</p>
+        <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button type="button" onclick="closeResolveConfirm()" class="btn btn-outline" style="font-size:11px; font-weight:700; padding:0.5rem 1.25rem;">CANCEL</button>
+            <button type="button" onclick="submitResolve()" class="btn btn-primary" style="font-size:11px; font-weight:700; padding:0.5rem 1.25rem; background:#2E7D32; border-color:#2E7D32;">MARK RESOLVED</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden resolve form -->
+<form id="resolveForm" method="POST" action="<?= base_url('actions/do_update_status.php') ?>" style="display:none;">
+    <input type="hidden" name="report_id"  id="hiddenResolveReportId">
+    <input type="hidden" name="new_status" value="Resolved">
+</form>
+
+<style>
+.pagination-controls {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 0.75rem; margin-top: 1rem; padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+}
+.page-btn {
+    display: inline-block; padding: 0.3rem 0.75rem;
+    background: var(--maroon, #780A0D); color: #fff;
+    border-radius: 4px; text-decoration: none;
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+}
+.page-btn.disabled { background: #ccc; color: #999; cursor: not-allowed; pointer-events: none; }
+.page-info { font-size: 13px; color: var(--maroon, #780A0D); font-weight: 600; }
+</style>
+
+<script>
+const labLabels    = <?= json_encode(array_column($perLab,    'LabName')) ?>;
+const labCounts    = <?= json_encode(array_column($perLab,    'cnt'))     ?>;
+const statusData   = <?= json_encode(array_column($byStatus,  'cnt'))     ?>;
+const statusLabels = <?= json_encode(array_column($byStatus,  'Status'))  ?>;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Generate multiple colors for the bar chart as requested
-    const chartColors = [
-        '#780A0D', '#D32F2F', '#F57C00', '#FBC02D', 
-        '#388E3C', '#1976D2', '#7B1FA2', '#455A64'
-    ];
-    
-    // Assign colors to bars wrapping around if there are more labs than colors
+    const chartColors = ['#780A0D','#D32F2F','#F57C00','#FBC02D','#388E3C','#1976D2','#7B1FA2','#455A64'];
     const backgroundColors = labCounts.map((_, i) => chartColors[i % chartColors.length]);
 
     new Chart(document.getElementById('barChart'), {
         type: 'bar',
-        data: {
-            labels: labLabels,
-            datasets: [{
-                label: 'Reports',
-                data: labCounts,
-                backgroundColor: backgroundColors,
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
+        data: { labels: labLabels, datasets: [{ label: 'Reports', data: labCounts, backgroundColor: backgroundColors, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
     });
 
     new Chart(document.getElementById('pieChart'), {
         type: 'doughnut',
-        data: {
-            labels: statusLabels,
-            datasets: [{
-                data: statusData,
-                backgroundColor: ['#FFC107', '#1565C0', '#2E7D32'],
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } }
-        }
+        data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: ['#FFC107','#1565C0','#2E7D32'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 });
 
+// ── Unassigned detail overlay ─────────────────────────────────────────────────
+let currentUnassignedReportId = null;
+
 function openDetail(r) {
+    currentUnassignedReportId = r.ReportID;
     document.getElementById('detailId').textContent       = '#' + r.ReportID;
     document.getElementById('detailReporter').textContent = r.Reporter;
     document.getElementById('detailRole').textContent     = r.ReporterRole;
@@ -406,14 +489,18 @@ function openDetail(r) {
     document.getElementById('detailStatus').textContent   = r.Status || 'Pending';
     document.getElementById('detailDate').textContent     = r.DateFiled;
     document.getElementById('detailDesc').textContent     = r.Description || '—';
-    document.getElementById('assignReportId').value       = r.ReportID;
+    document.getElementById('unassignedPersonnelSelect').value = '';
     document.getElementById('detailOverlay').classList.remove('hidden');
 }
 function closeDetail() {
     document.getElementById('detailOverlay').classList.add('hidden');
 }
 
+// ── Assigned detail overlay ───────────────────────────────────────────────────
+let currentAssignedReportId = null;
+
 function openAssignedDetail(r) {
+    currentAssignedReportId = r.ReportID;
     document.getElementById('aDetailId').textContent       = '#' + r.ReportID;
     document.getElementById('aDetailReporter').textContent = r.Reporter;
     document.getElementById('aDetailRole').textContent     = r.ReporterRole;
@@ -423,10 +510,7 @@ function openAssignedDetail(r) {
     document.getElementById('aDetailStatus').textContent   = r.Status;
     document.getElementById('aDetailDate').textContent     = r.DateFiled;
     document.getElementById('aDetailDesc').textContent     = r.Description || '—';
-    document.getElementById('aAssignReportId').value       = r.ReportID;
-    document.getElementById('aResolveReportId').value      = r.ReportID;
 
-    // Toggle sections based on resolved status
     var isResolved = (r.Status === 'Resolved');
     document.getElementById('aResolvedBySection').style.display = isResolved ? '' : 'none';
     document.getElementById('aReassignForm').style.display      = isResolved ? 'none' : 'flex';
@@ -435,17 +519,91 @@ function openAssignedDetail(r) {
     if (isResolved) {
         document.getElementById('aResolvedByName').textContent = r.Personnel || '—';
     } else {
-        // Pre-select the currently assigned personnel
         var sel = document.getElementById('aPersonnelSelect');
-        if (r.AssignedPersonnelID) {
-            sel.value = r.AssignedPersonnelID;
-        }
+        sel.value = r.AssignedPersonnelID || '';
     }
     document.getElementById('assignedDetailOverlay').classList.remove('hidden');
 }
 function closeAssignedDetail() {
     document.getElementById('assignedDetailOverlay').classList.add('hidden');
 }
+
+// ── Assign confirmation (unassigned reports) ──────────────────────────────────
+function openAssignConfirm() {
+    const sel = document.getElementById('unassignedPersonnelSelect');
+    if (!sel.value) {
+        alert('Please select a TSG Personnel first.');
+        return;
+    }
+    const personnelName = sel.options[sel.selectedIndex].text;
+    document.getElementById('confirmPersonnelName').textContent  = personnelName;
+    document.getElementById('confirmAssignReportId').textContent = '#' + currentUnassignedReportId;
+    document.getElementById('assignConfirmOverlay').style.display = 'flex';
+}
+function closeAssignConfirm() {
+    document.getElementById('assignConfirmOverlay').style.display = 'none';
+}
+function submitAssign() {
+    const sel = document.getElementById('unassignedPersonnelSelect');
+    document.getElementById('hiddenAssignReportId').value = currentUnassignedReportId;
+    document.getElementById('hiddenPersonnelId').value    = sel.value;
+    closeAssignConfirm();
+    closeDetail();
+    document.getElementById('assignForm').submit();
+}
+
+// ── Reassign confirmation (assigned reports) ──────────────────────────────────
+function openReassignConfirm() {
+    const sel = document.getElementById('aPersonnelSelect');
+    if (!sel.value) {
+        alert('Please select a TSG Personnel first.');
+        return;
+    }
+    const personnelName = sel.options[sel.selectedIndex].text;
+    document.getElementById('confirmPersonnelName').textContent  = personnelName;
+    document.getElementById('confirmAssignReportId').textContent = '#' + currentAssignedReportId;
+    document.getElementById('assignConfirmOverlay').style.display = 'flex';
+    // Swap submit to use reassign source
+    window._reassignMode = true;
+}
+// Override submitAssign for reassign mode
+const _originalSubmitAssign = submitAssign;
+function submitAssign() {
+    if (window._reassignMode) {
+        const sel = document.getElementById('aPersonnelSelect');
+        document.getElementById('hiddenAssignReportId').value = currentAssignedReportId;
+        document.getElementById('hiddenPersonnelId').value    = sel.value;
+        window._reassignMode = false;
+        closeAssignConfirm();
+        closeAssignedDetail();
+        document.getElementById('assignForm').submit();
+    } else {
+        _originalSubmitAssign();
+    }
+}
+
+// ── Resolve confirmation ──────────────────────────────────────────────────────
+function openResolveConfirm() {
+    document.getElementById('confirmResolveReportId').textContent = '#' + currentAssignedReportId;
+    document.getElementById('resolveConfirmOverlay').style.display = 'flex';
+}
+function closeResolveConfirm() {
+    document.getElementById('resolveConfirmOverlay').style.display = 'none';
+}
+function submitResolve() {
+    document.getElementById('hiddenResolveReportId').value = currentAssignedReportId;
+    closeResolveConfirm();
+    closeAssignedDetail();
+    document.getElementById('resolveForm').submit();
+}
+
+// Close confirmation modals on backdrop click
+document.getElementById('assignConfirmOverlay').addEventListener('click', function(e) {
+    if (e.target === this) { window._reassignMode = false; closeAssignConfirm(); }
+});
+document.getElementById('resolveConfirmOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeResolveConfirm();
+});
 </script>
 
 <?php
